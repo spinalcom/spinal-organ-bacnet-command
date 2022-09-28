@@ -41,29 +41,22 @@ class SpinalPilot {
     sendPilotRequest(request) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.writeProperties(request);
+                return this.writeProperty(request);
                 // console.log("success");
             }
             catch (error) {
                 console.error(error.message);
+                return false;
             }
         });
     }
-    writeProperties(requests = []) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!Array.isArray(requests))
-                requests = [requests];
-            for (let index = 0; index < requests.length; index++) {
-                const req = requests[index];
-                try {
-                    yield this.writeProperty(req);
-                }
-                catch (error) {
-                    throw error;
-                }
-            }
-        });
-    }
+    // public async writeProperties(request: IRequest) {
+    //    // if (!Array.isArray(requests)) requests = [requests];
+    //    // for (let index = 0; index < requests.length; index++) {
+    //    // const req = requests[index];
+    //    return this.writeProperty(request);
+    //    // }
+    // }
     writeProperty(req) {
         return __awaiter(this, void 0, void 0, function* () {
             const types = this.getDataTypes(req.objectId.type);
@@ -78,9 +71,7 @@ class SpinalPilot {
                     // throw error;
                 }
             }
-            if (!success) {
-                // throw new Error("error");
-            }
+            return success;
         });
     }
     useDataType(req, dataType) {

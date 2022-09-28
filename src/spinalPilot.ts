@@ -31,34 +31,30 @@ import * as bacnet from "bacstack";
 
 class SpinalPilot {
    constructor() {
-      
+
    }
 
-   public async sendPilotRequest(request) {
+   public async sendPilotRequest(request: IRequest): Promise<boolean> {
       try {
-         await this.writeProperties(request)
+         return this.writeProperty(request)
          // console.log("success");
       } catch (error) {
          console.error(error.message);
-      }
-   }
-   
-   
-   public async writeProperties(requests: IRequest[] = []) {
-      if(!Array.isArray(requests)) requests = [requests];
-   
-      for (let index = 0; index < requests.length; index++) {
-         const req = requests[index];
-         try {
-            await this.writeProperty(req);
-         } catch (error) {
-            throw error;
-         }
-   
+         return false;
       }
    }
 
-   private async writeProperty(req: IRequest) {
+
+   // public async writeProperties(request: IRequest) {
+   //    // if (!Array.isArray(requests)) requests = [requests];
+
+   //    // for (let index = 0; index < requests.length; index++) {
+   //    // const req = requests[index];
+   //    return this.writeProperty(request);
+   //    // }
+   // }
+
+   private async writeProperty(req: IRequest): Promise<boolean> {
       const types = this.getDataTypes(req.objectId.type);
       let success = false;
 
@@ -72,9 +68,7 @@ class SpinalPilot {
          }
       }
 
-      if (!success) {
-         // throw new Error("error");
-      }
+      return success;
 
    }
 
@@ -132,4 +126,4 @@ const spinalPilot = new SpinalPilot();
 
 
 export default spinalPilot;
-export {spinalPilot }
+export { spinalPilot }
