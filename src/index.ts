@@ -43,6 +43,12 @@ const url = `${protocol}://${userId}:${password}@${host}:${port}/`;
 const connect = spinalCore.connect(url);
 
 
+// Cette fonction est executée en cas de deconnexion au hub
+FileSystem.onConnectionError = (error_code: number) => {
+    console.log("redemarrage");
+    process.exit(error_code); // kill le process;
+}
+
 getGraph(connect, digitaltwin_path).then(async (graph) => {
     const context: SpinalContext = await graph.getContext(command_context_name);
     console.log("getting bmsEndpoints...")

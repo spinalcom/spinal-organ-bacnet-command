@@ -99,7 +99,7 @@ function sendUpdateRequest(endpointElement, device, newValue) {
         // return spinalPilot;
     });
 }
-function getEndpointDevice(endpoint) {
+function _getEndpointDevice(endpoint) {
     return __awaiter(this, void 0, void 0, function* () {
         const endpointId = endpoint.getId().get();
         if (endpointToDeviceMap.get(endpointId))
@@ -120,8 +120,8 @@ function _getEndpointData(endpointNode) {
     return __awaiter(this, void 0, void 0, function* () {
         const [element, controlValue, device] = yield Promise.all([
             endpointNode.getElement(),
-            this.getEndpointControlValue(endpointNode),
-            getEndpointDevice(endpointNode)
+            _getEndpointControlValue(endpointNode),
+            _getEndpointDevice(endpointNode)
         ]);
         return {
             element,

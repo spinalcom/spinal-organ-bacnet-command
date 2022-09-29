@@ -99,7 +99,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
 }
 
 
-async function getEndpointDevice(endpoint: SpinalNode): Promise<SpinalNode> {
+async function _getEndpointDevice(endpoint: SpinalNode): Promise<SpinalNode> {
     const endpointId = endpoint.getId().get();
     if (endpointToDeviceMap.get(endpointId)) return endpointToDeviceMap.get(endpointId);
 
@@ -120,8 +120,8 @@ async function getEndpointDevice(endpoint: SpinalNode): Promise<SpinalNode> {
 async function _getEndpointData(endpointNode: SpinalNode): Promise<{ element: SpinalBmsEndpoint, controlValue: SpinalAttribute, device: SpinalNode }> {
     const [element, controlValue, device] = await Promise.all([
         endpointNode.getElement(),
-        this.getEndpointControlValue(endpointNode),
-        getEndpointDevice(endpointNode)
+        _getEndpointControlValue(endpointNode),
+        _getEndpointDevice(endpointNode)
     ])
 
     return {
