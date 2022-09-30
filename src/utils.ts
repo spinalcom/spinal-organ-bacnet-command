@@ -32,6 +32,7 @@ import { SpinalAttribute } from "spinal-models-documentation/declarations";
 
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
+const DEFAULT_COMMAND_VALUE = "null";
 
 const endpointToDeviceMap = new Map();
 
@@ -81,6 +82,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
 
     // const organ = await organNode.element.load();
     // let organ = organNode;
+    if (newValue === DEFAULT_COMMAND_VALUE) return;
 
     const request = {
         address: device.info.address.get(),
@@ -88,6 +90,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
         objectId: { type: endpointElement.typeId.get(), instance: endpointElement.id.get() },
         value: newValue,
     };
+
 
     console.log(endpointElement.name.get(), "a changé de value", newValue);
     return spinalPilot.sendPilotRequest(request);
@@ -135,6 +138,6 @@ async function _getEndpointControlValue(endpointNode: SpinalNode): Promise<Spina
     const [attribute] = await attributeService.getAttributesByCategory(endpointNode, ATTRIBUTE_CATEGORY_NAME, ATTRIBUTE_NAME)
     if (attribute) return attribute;
 
-    return attributeService.addAttributeByCategoryName(endpointNode, ATTRIBUTE_CATEGORY_NAME, ATTRIBUTE_NAME, "-1");
+    return attributeService.addAttributeByCategoryName(endpointNode, ATTRIBUTE_CATEGORY_NAME, ATTRIBUTE_NAME, DEFAULT_COMMAND_VALUE);
 }
 

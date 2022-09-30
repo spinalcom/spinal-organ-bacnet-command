@@ -40,6 +40,7 @@ const spinal_env_viewer_plugin_documentation_service_1 = require("spinal-env-vie
 const _ = require("lodash");
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
+const DEFAULT_COMMAND_VALUE = "null";
 const endpointToDeviceMap = new Map();
 function getGraph(connect, digitaltwin_path) {
     return new Promise((resolve, reject) => {
@@ -86,6 +87,8 @@ function sendUpdateRequest(endpointElement, device, newValue) {
         // const devices = await this.getDevices(nodeId);
         // const organ = await organNode.element.load();
         // let organ = organNode;
+        if (newValue === DEFAULT_COMMAND_VALUE)
+            return;
         const request = {
             address: device.info.address.get(),
             deviceId: device.info.idNetwork.get(),
@@ -135,7 +138,7 @@ function _getEndpointControlValue(endpointNode) {
         const [attribute] = yield spinal_env_viewer_plugin_documentation_service_1.attributeService.getAttributesByCategory(endpointNode, ATTRIBUTE_CATEGORY_NAME, ATTRIBUTE_NAME);
         if (attribute)
             return attribute;
-        return spinal_env_viewer_plugin_documentation_service_1.attributeService.addAttributeByCategoryName(endpointNode, ATTRIBUTE_CATEGORY_NAME, ATTRIBUTE_NAME, "-1");
+        return spinal_env_viewer_plugin_documentation_service_1.attributeService.addAttributeByCategoryName(endpointNode, ATTRIBUTE_CATEGORY_NAME, ATTRIBUTE_NAME, DEFAULT_COMMAND_VALUE);
     });
 }
 //# sourceMappingURL=utils.js.map
