@@ -29,6 +29,8 @@ import { spinalPilot } from "./spinalPilot";
 import { attributeService } from "spinal-env-viewer-plugin-documentation-service";
 import * as _ from "lodash";
 import { SpinalAttribute } from "spinal-models-documentation/declarations";
+import { IRequest } from "spinal-model-bacnet";
+
 
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
@@ -90,7 +92,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     // let organ = organNode;
     if (newValue === DEFAULT_COMMAND_VALUE) return;
 
-    const request = {
+    const request: IRequest = {
         address: device.info.address.get(),
         deviceId: device.info.idNetwork.get(),
         objectId: { type: endpointElement.typeId.get(), instance: endpointElement.id.get() },
