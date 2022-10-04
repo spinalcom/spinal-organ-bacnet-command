@@ -42,6 +42,7 @@ const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
 const DEFAULT_COMMAND_VALUE = "null";
 const endpointToDeviceMap = new Map();
+const isInitiated = {};
 function getGraph(connect, digitaltwin_path) {
     return new Promise((resolve, reject) => {
         spinal_core_connectorjs_type_1.spinalCore.load(connect, digitaltwin_path, (graph) => __awaiter(this, void 0, void 0, function* () {
@@ -73,11 +74,17 @@ exports.bindEndpoints = bindEndpoints;
 function _bindEndpoint(endpointNode) {
     return __awaiter(this, void 0, void 0, function* () {
         const { controlValue, device, element } = yield _getEndpointData(endpointNode);
+        const id = endpointNode.getId().get();
         controlValue.value.bind(() => __awaiter(this, void 0, void 0, function* () {
-            const newValue = controlValue.value.get();
-            const success = yield sendUpdateRequest(element, device, newValue);
-            if (success)
-                element.currentValue.set(newValue);
+            if (isInitiated[id]) {
+                const newValue = controlValue.value.get();
+                const success = yield sendUpdateRequest(element, device, newValue);
+                if (success)
+                    element.currentValue.set(newValue);
+            }
+            else {
+                isInitiated[id] = true;
+            }
         }), false);
     });
 }

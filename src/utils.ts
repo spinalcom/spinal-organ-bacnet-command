@@ -35,6 +35,7 @@ const ATTRIBUTE_NAME = "controlValue";
 const DEFAULT_COMMAND_VALUE = "null";
 
 const endpointToDeviceMap = new Map();
+const isInitiated = {};
 
 export function getGraph(connect: FileSystem, digitaltwin_path: string): Promise<SpinalGraph> {
     return new Promise((resolve, reject) => {
@@ -68,10 +69,15 @@ export async function bindEndpoints(endpoints: SpinalNode[]) {
 
 async function _bindEndpoint(endpointNode: SpinalNode) {
     const { controlValue, device, element } = await _getEndpointData(endpointNode);
+    const id = endpointNode.getId().get();
     controlValue.value.bind(async () => {
-        const newValue = controlValue.value.get();
-        const success = await sendUpdateRequest(element, device, newValue);
-        if (success) element.currentValue.set(newValue);
+        if (isInitiated[id]) {
+            const newValue = controlValue.value.get();
+            const success = await sendUpdateRequest(element, device, newValue);
+            if (success) element.currentValue.set(newValue);
+        } else {
+            isInitiated[id] = true;
+        }
     }, false)
 }
 
