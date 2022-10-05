@@ -54,5 +54,8 @@ getGraph(connect, digitaltwin_path).then(async (graph) => {
     console.log("getting bmsEndpoints...")
     const bmsEndpoints = await getAllBmsEndpoint(context);
     console.log(bmsEndpoints.length, "endpoint(s) found");
-    bindEndpoints(bmsEndpoints);
+    console.log("binding...")
+    await bindEndpoints(bmsEndpoints);
+    console.log("** Done **")
+
 })

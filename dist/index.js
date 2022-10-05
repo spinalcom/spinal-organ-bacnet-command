@@ -55,6 +55,8 @@ spinal_core_connectorjs_type_1.FileSystem.onConnectionError = (error_code) => {
     console.log("getting bmsEndpoints...");
     const bmsEndpoints = yield (0, utils_1.getAllBmsEndpoint)(context);
     console.log(bmsEndpoints.length, "endpoint(s) found");
-    (0, utils_1.bindEndpoints)(bmsEndpoints);
+    console.log("binding...");
+    yield (0, utils_1.bindEndpoints)(bmsEndpoints);
+    console.log("** Done **");
 }));
 //# sourceMappingURL=index.js.map

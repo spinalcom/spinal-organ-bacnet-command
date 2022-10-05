@@ -36,8 +36,7 @@ exports.spinalPilot = void 0;
 const BacnetGlobalVariables_1 = require("./BacnetGlobalVariables");
 const bacnet = require("bacstack");
 class SpinalPilot {
-    constructor() {
-    }
+    constructor() { }
     sendPilotRequest(request) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -78,7 +77,7 @@ class SpinalPilot {
         return new Promise((resolve, reject) => {
             const client = new bacnet();
             const value = dataType === BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
-            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: 8 }, (err, value) => {
+            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: 16 }, (err, value) => {
                 if (err) {
                     reject(err);
                     return;
