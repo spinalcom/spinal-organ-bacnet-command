@@ -1,8 +1,6 @@
 require("json5/lib/register");
 const pm2 = require("pm2");
 
-const config = require("./config.js");
-
 module.exports = {
   apps: [
     {
