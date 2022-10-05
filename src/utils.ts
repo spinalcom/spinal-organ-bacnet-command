@@ -49,7 +49,7 @@ export function getGraph(connect: FileSystem, digitaltwin_path: string): Promise
 
 
 export function getAllBmsEndpoint(context: SpinalContext): Promise<SpinalContext[]> {
-    return context.findInContextAsyncPredicate(context, async (node) => {
+    return context.findInContext(context, (node) => {
         if (node.getType().get() === SpinalBmsEndpoint.nodeTypeName) {
             return true;
         }

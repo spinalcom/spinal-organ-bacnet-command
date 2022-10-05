@@ -52,12 +52,12 @@ function getGraph(connect, digitaltwin_path) {
 }
 exports.getGraph = getGraph;
 function getAllBmsEndpoint(context) {
-    return context.findInContextAsyncPredicate(context, (node) => __awaiter(this, void 0, void 0, function* () {
+    return context.findInContext(context, (node) => {
         if (node.getType().get() === spinal_model_bmsnetwork_1.SpinalBmsEndpoint.nodeTypeName) {
             return true;
         }
         return false;
-    }));
+    });
 }
 exports.getAllBmsEndpoint = getAllBmsEndpoint;
 function bindEndpoints(endpoints) {
