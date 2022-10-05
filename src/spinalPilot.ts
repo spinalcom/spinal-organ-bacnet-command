@@ -30,9 +30,7 @@ import * as bacnet from "bacstack";
 
 
 class SpinalPilot {
-   constructor() {
-
-   }
+   constructor() { }
 
    public async sendPilotRequest(request: IRequest): Promise<boolean> {
       try {
@@ -77,7 +75,7 @@ class SpinalPilot {
          const client = new bacnet();
          const value = dataType === APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
 
-         client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: 8 }, (err, value) => {
+         client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: 16 }, (err, value) => {
             if (err) {
                reject(err)
                return;
