@@ -92,7 +92,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     // let organ = organNode;
     if (newValue === DEFAULT_COMMAND_VALUE) return;
 
-    if(newValue === "null") newValue = null;
+    if(newValue === "NaN") newValue = null;
         
     const request: IRequest = {
         address: device.info.address.get(),

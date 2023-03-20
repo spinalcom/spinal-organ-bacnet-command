@@ -96,7 +96,7 @@ function sendUpdateRequest(endpointElement, device, newValue) {
         // let organ = organNode;
         if (newValue === DEFAULT_COMMAND_VALUE)
             return;
-        if (newValue === "null")
+        if (newValue === "NaN")
             newValue = null;
         const request = {
             address: device.info.address.get(),
