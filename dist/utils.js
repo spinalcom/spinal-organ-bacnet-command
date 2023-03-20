@@ -40,7 +40,7 @@ const spinal_env_viewer_plugin_documentation_service_1 = require("spinal-env-vie
 const _ = require("lodash");
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
-const DEFAULT_COMMAND_VALUE = "null";
+const DEFAULT_COMMAND_VALUE = "undefined";
 const endpointToDeviceMap = new Map();
 const isInitiated = {};
 function getGraph(connect, digitaltwin_path) {
@@ -96,13 +96,15 @@ function sendUpdateRequest(endpointElement, device, newValue) {
         // let organ = organNode;
         if (newValue === DEFAULT_COMMAND_VALUE)
             return;
+        if (newValue === "null")
+            newValue = null;
         const request = {
             address: device.info.address.get(),
             deviceId: device.info.idNetwork.get(),
             objectId: { type: endpointElement.typeId.get(), instance: endpointElement.id.get() },
             value: newValue,
         };
-        console.log(endpointElement.name.get(), "a changé de value", newValue);
+        console.log(newValue != null ? endpointElement.name.get() + ` a changé de value => ${newValue}` : "Priorité relachée pour le : " + endpointElement.name.get());
         return spinalPilot_1.spinalPilot.sendPilotRequest(request);
         // const spinalPilot = new SpinalPilotModel(organ, requests);
         // await spinalPilot.addToNode(endpointNode);

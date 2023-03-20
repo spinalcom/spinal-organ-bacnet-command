@@ -34,7 +34,7 @@ import { IRequest } from "spinal-model-bacnet";
 
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
-const DEFAULT_COMMAND_VALUE = "null";
+const DEFAULT_COMMAND_VALUE = "undefined";
 
 const endpointToDeviceMap = new Map();
 const isInitiated = {};
@@ -92,6 +92,8 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     // let organ = organNode;
     if (newValue === DEFAULT_COMMAND_VALUE) return;
 
+    if(newValue === "null") newValue = null;
+        
     const request: IRequest = {
         address: device.info.address.get(),
         deviceId: device.info.idNetwork.get(),
@@ -99,8 +101,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
         value: newValue,
     };
 
-
-    console.log(endpointElement.name.get(), "a changé de value", newValue);
+    console.log(newValue!=null? endpointElement.name.get() + ` a changé de value => ${newValue}`: "Priorité relachée pour le : " + endpointElement.name.get());
     return spinalPilot.sendPilotRequest(request);
 
     // const spinalPilot = new SpinalPilotModel(organ, requests);

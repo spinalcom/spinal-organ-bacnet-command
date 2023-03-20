@@ -28,6 +28,7 @@ import { PropertyIds, ObjectTypes, APPLICATION_TAGS } from "./BacnetGlobalVariab
 
 import * as bacnet from "bacstack";
 
+const bacnet_priority= process.env.BACNET_PRIORITY || "16";
 
 class SpinalPilot {
    constructor() { }
@@ -75,7 +76,7 @@ class SpinalPilot {
          const client = new bacnet();
          const value = dataType === APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
 
-         client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: 16 }, (err, value) => {
+         client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
             if (err) {
                reject(err)
                return;

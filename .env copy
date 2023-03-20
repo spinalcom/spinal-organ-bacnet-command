@@ -5,6 +5,7 @@ HOST="localhost"
 PORT="8010"
 COMMAND_CONTEXT_NAME="XXXX"
 DIGITAL_TWIN_PATH="/__users__/admin/Digital twin"
+BACNET_PRIORITY= "X"
 
 
 # USER_ID=168
