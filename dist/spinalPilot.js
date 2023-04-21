@@ -35,35 +35,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.spinalPilot = void 0;
 const BacnetGlobalVariables_1 = require("./BacnetGlobalVariables");
 const bacnet = require("bacstack");
+const bacnet_priority = process.env.BACNET_PRIORITY || "16";
 class SpinalPilot {
-    constructor() {
-    }
+    constructor() { }
     sendPilotRequest(request) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.writeProperties(request);
+                return this.writeProperty(request);
                 // console.log("success");
             }
             catch (error) {
                 console.error(error.message);
+                return false;
             }
         });
     }
-    writeProperties(requests = []) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!Array.isArray(requests))
-                requests = [requests];
-            for (let index = 0; index < requests.length; index++) {
-                const req = requests[index];
-                try {
-                    yield this.writeProperty(req);
-                }
-                catch (error) {
-                    throw error;
-                }
-            }
-        });
-    }
+    // public async writeProperties(request: IRequest) {
+    //    // if (!Array.isArray(requests)) requests = [requests];
+    //    // for (let index = 0; index < requests.length; index++) {
+    //    // const req = requests[index];
+    //    return this.writeProperty(request);
+    //    // }
+    // }
     writeProperty(req) {
         return __awaiter(this, void 0, void 0, function* () {
             const types = this.getDataTypes(req.objectId.type);
@@ -78,16 +71,14 @@ class SpinalPilot {
                     // throw error;
                 }
             }
-            if (!success) {
-                // throw new Error("error");
-            }
+            return success;
         });
     }
     useDataType(req, dataType) {
         return new Promise((resolve, reject) => {
             const client = new bacnet();
             const value = dataType === BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
-            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: 8 }, (err, value) => {
+            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
                 if (err) {
                     reject(err);
                     return;

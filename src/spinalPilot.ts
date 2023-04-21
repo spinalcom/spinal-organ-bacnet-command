@@ -28,37 +28,32 @@ import { PropertyIds, ObjectTypes, APPLICATION_TAGS } from "./BacnetGlobalVariab
 
 import * as bacnet from "bacstack";
 
+const bacnet_priority= process.env.BACNET_PRIORITY || "16";
 
 class SpinalPilot {
-   constructor() {
-      
-   }
+   constructor() { }
 
-   public async sendPilotRequest(request) {
+   public async sendPilotRequest(request: IRequest): Promise<boolean> {
       try {
-         await this.writeProperties(request)
+         return this.writeProperty(request)
          // console.log("success");
       } catch (error) {
          console.error(error.message);
-      }
-   }
-   
-   
-   public async writeProperties(requests: IRequest[] = []) {
-      if(!Array.isArray(requests)) requests = [requests];
-   
-      for (let index = 0; index < requests.length; index++) {
-         const req = requests[index];
-         try {
-            await this.writeProperty(req);
-         } catch (error) {
-            throw error;
-         }
-   
+         return false;
       }
    }
 
-   private async writeProperty(req: IRequest) {
+
+   // public async writeProperties(request: IRequest) {
+   //    // if (!Array.isArray(requests)) requests = [requests];
+
+   //    // for (let index = 0; index < requests.length; index++) {
+   //    // const req = requests[index];
+   //    return this.writeProperty(request);
+   //    // }
+   // }
+
+   private async writeProperty(req: IRequest): Promise<boolean> {
       const types = this.getDataTypes(req.objectId.type);
       let success = false;
 
@@ -72,9 +67,7 @@ class SpinalPilot {
          }
       }
 
-      if (!success) {
-         // throw new Error("error");
-      }
+      return success;
 
    }
 
@@ -83,7 +76,7 @@ class SpinalPilot {
          const client = new bacnet();
          const value = dataType === APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
 
-         client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: 8 }, (err, value) => {
+         client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
             if (err) {
                reject(err)
                return;
@@ -132,4 +125,4 @@ const spinalPilot = new SpinalPilot();
 
 
 export default spinalPilot;
-export {spinalPilot }
+export { spinalPilot }
