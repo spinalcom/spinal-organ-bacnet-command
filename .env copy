@@ -19,3 +19,4 @@ COMMAND_GROUP_NAME="" # pas obligatoire
 BACNET_PRIORITY= ""
 
 NODE_TLS_REJECT_UNAUTHORIZED=0
+ORGAN_NAME = "spinal-organ-bacnet-command"

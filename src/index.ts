@@ -29,6 +29,12 @@ import { spinalCore, FileSystem } from "spinal-core-connectorjs_type";
 
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
+export interface IConfigFile{
+    name : string,
+    host: string,
+    protocol: string,
+    port : string
+}
 
 const userId = process.env.USER_ID;
 const password = process.env.PASSWORD;
@@ -39,11 +45,17 @@ const command_context_name = process.env.COMMAND_CONTEXT_NAME;
 const command_category_name = process.env.COMMAND_CATEGORY_NAME;
 const command_group_name = process.env.COMMAND_GROUP_NAME;
 const digitaltwin_path = process.env.DIGITAL_TWIN_PATH;
+const organ_name = process.env.ORGAN_NAME;
 
 
 const url = `${protocol}://${userId}:${password}@${host}:${port}/`;
 const connect = spinalCore.connect(url);
-
+let config : IConfigFile={
+    name: organ_name,
+    host: host,
+    protocol : protocol,
+    port: port
+};
 
 // Cette fonction est executée en cas de deconnexion au hub
 FileSystem.onConnectionError = (error_code: number) => {
@@ -51,7 +63,7 @@ FileSystem.onConnectionError = (error_code: number) => {
     process.exit(error_code); // kill le process;
 }
 
-getGraph(connect, digitaltwin_path).then(async (graph) => {
+getGraph(connect, digitaltwin_path, config).then(async (graph) => {
     const context: SpinalContext = await graph.getContext(command_context_name);
     if (!context) throw new Error(`No context found for "${command_context_name}"`);
 

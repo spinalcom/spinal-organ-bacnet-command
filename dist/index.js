@@ -45,14 +45,21 @@ const command_context_name = process.env.COMMAND_CONTEXT_NAME;
 const command_category_name = process.env.COMMAND_CATEGORY_NAME;
 const command_group_name = process.env.COMMAND_GROUP_NAME;
 const digitaltwin_path = process.env.DIGITAL_TWIN_PATH;
+const organ_name = process.env.ORGAN_NAME;
 const url = `${protocol}://${userId}:${password}@${host}:${port}/`;
 const connect = spinal_core_connectorjs_type_1.spinalCore.connect(url);
+let config = {
+    name: organ_name,
+    host: host,
+    protocol: protocol,
+    port: port
+};
 // Cette fonction est executée en cas de deconnexion au hub
 spinal_core_connectorjs_type_1.FileSystem.onConnectionError = (error_code) => {
     console.log("redemarrage");
     process.exit(error_code); // kill le process;
 };
-(0, utils_1.getGraph)(connect, digitaltwin_path).then((graph) => __awaiter(void 0, void 0, void 0, function* () {
+(0, utils_1.getGraph)(connect, digitaltwin_path, config).then((graph) => __awaiter(void 0, void 0, void 0, function* () {
     const context = yield graph.getContext(command_context_name);
     if (!context)
         throw new Error(`No context found for "${command_context_name}"`);

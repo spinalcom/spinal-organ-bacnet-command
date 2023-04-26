@@ -38,14 +38,16 @@ const spinal_model_bmsnetwork_1 = require("spinal-model-bmsnetwork");
 const spinalPilot_1 = require("./spinalPilot");
 const spinal_env_viewer_plugin_documentation_service_1 = require("spinal-env-viewer-plugin-documentation-service");
 const _ = require("lodash");
+const ConfigFile_js_1 = require("../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js");
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
 const DEFAULT_COMMAND_VALUE = "undefined";
 const endpointToDeviceMap = new Map();
 const isInitiated = {};
-function getGraph(connect, digitaltwin_path) {
+function getGraph(connect, digitaltwin_path, config) {
     return new Promise((resolve, reject) => {
         spinal_core_connectorjs_type_1.spinalCore.load(connect, digitaltwin_path, (graph) => __awaiter(this, void 0, void 0, function* () {
+            ConfigFile_js_1.default.init(connect, config.name + "-config", config.host, config.protocol, parseInt(config.port));
             resolve(graph);
         }), () => reject(new Error(`No digitaltwin found at ${digitaltwin_path}`)));
     });
@@ -130,7 +132,9 @@ function sendUpdateRequest(endpointElement, device, newValue) {
         // let organ = organNode;
         if (newValue === DEFAULT_COMMAND_VALUE)
             return;
-        if (newValue === "NaN")
+        if (newValue === "NaN_1")
+            newValue = null;
+        if (newValue === "NaN_2")
             newValue = null;
         const request = {
             address: device.info.address.get(),
