@@ -42,6 +42,8 @@ const protocol = process.env.PROTOCOL;
 const host = process.env.HOST;
 const port = process.env.PORT;
 const command_context_name = process.env.COMMAND_CONTEXT_NAME;
+const command_category_name = process.env.COMMAND_CATEGORY_NAME;
+const command_group_name = process.env.COMMAND_GROUP_NAME;
 const digitaltwin_path = process.env.DIGITAL_TWIN_PATH;
 const url = `${protocol}://${userId}:${password}@${host}:${port}/`;
 const connect = spinal_core_connectorjs_type_1.spinalCore.connect(url);
@@ -52,11 +54,17 @@ spinal_core_connectorjs_type_1.FileSystem.onConnectionError = (error_code) => {
 };
 (0, utils_1.getGraph)(connect, digitaltwin_path).then((graph) => __awaiter(void 0, void 0, void 0, function* () {
     const context = yield graph.getContext(command_context_name);
+    if (!context)
+        throw new Error(`No context found for "${command_context_name}"`);
+    const startNode = yield (0, utils_1.getStartNode)(context, command_category_name, command_group_name);
     console.log("getting bmsEndpoints...");
-    const bmsEndpoints = yield (0, utils_1.getAllBmsEndpoint)(context);
+    const bmsEndpoints = yield (0, utils_1.getAllBmsEndpoint)(startNode, context);
     console.log(bmsEndpoints.length, "endpoint(s) found");
     console.log("binding...");
     yield (0, utils_1.bindEndpoints)(bmsEndpoints);
     console.log("** Done **");
-}));
+})).catch(err => {
+    console.error(err.message || err);
+    process.exit(0);
+});
 //# sourceMappingURL=index.js.map

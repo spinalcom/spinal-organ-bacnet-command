@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bindEndpoints = exports.getAllBmsEndpoint = exports.getGraph = void 0;
+exports.bindEndpoints = exports.getAllBmsEndpoint = exports.getStartNode = exports.getGraph = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_model_bmsnetwork_1 = require("spinal-model-bmsnetwork");
 const spinalPilot_1 = require("./spinalPilot");
@@ -47,12 +47,34 @@ function getGraph(connect, digitaltwin_path) {
     return new Promise((resolve, reject) => {
         spinal_core_connectorjs_type_1.spinalCore.load(connect, digitaltwin_path, (graph) => __awaiter(this, void 0, void 0, function* () {
             resolve(graph);
-        }), () => reject("digital twin not found"));
+        }), () => reject(new Error(`No digitaltwin found at ${digitaltwin_path}`)));
     });
 }
 exports.getGraph = getGraph;
-function getAllBmsEndpoint(context) {
-    return context.findInContext(context, (node) => {
+function getStartNode(context, categoryName, groupName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let group = null;
+        let category = null;
+        if (groupName && !categoryName)
+            throw new Error(`"COMMAND_CATEGORY_NAME" is mandatory, when "COMMAND_GROUP_NAME" is specified`);
+        if (categoryName && context) {
+            category = yield _getCategoryByName(context, categoryName);
+            if (!category)
+                throw new Error(`no category found for "${categoryName}"`);
+        }
+        if (groupName && category) {
+            group = yield _getGroupByName(context, category, groupName);
+            if (!group)
+                throw new Error(`no group found for "${groupName}"`);
+        }
+        return group || category || context;
+    });
+}
+exports.getStartNode = getStartNode;
+function getAllBmsEndpoint(startNode, context) {
+    if (!context)
+        context = startNode;
+    return startNode.findInContext(context, (node) => {
         if (node.getType().get() === spinal_model_bmsnetwork_1.SpinalBmsEndpoint.nodeTypeName) {
             return true;
         }
@@ -71,6 +93,18 @@ function bindEndpoints(endpoints) {
     });
 }
 exports.bindEndpoints = bindEndpoints;
+function _getCategoryByName(context, categoryName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const categories = yield context.getChildrenInContext(context);
+        return categories.find(el => el.getName().get() === categoryName);
+    });
+}
+function _getGroupByName(context, category, groupName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const groups = yield category.getChildrenInContext(context);
+        return groups.find(el => el.getName().get() === groupName);
+    });
+}
 function _bindEndpoint(endpointNode) {
     return __awaiter(this, void 0, void 0, function* () {
         const { controlValue, device, element } = yield _getEndpointData(endpointNode);

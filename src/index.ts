@@ -23,7 +23,7 @@
  */
 
 import * as path from "path";
-import { getGraph, getAllBmsEndpoint, bindEndpoints } from "./utils";
+import { getGraph, getStartNode, getAllBmsEndpoint, bindEndpoints } from "./utils";
 import { SpinalContext } from "spinal-model-graph";
 import { spinalCore, FileSystem } from "spinal-core-connectorjs_type";
 
@@ -36,6 +36,8 @@ const protocol = process.env.PROTOCOL;
 const host = process.env.HOST;
 const port = process.env.PORT;
 const command_context_name = process.env.COMMAND_CONTEXT_NAME;
+const command_category_name = process.env.COMMAND_CATEGORY_NAME;
+const command_group_name = process.env.COMMAND_GROUP_NAME;
 const digitaltwin_path = process.env.DIGITAL_TWIN_PATH;
 
 
@@ -51,11 +53,19 @@ FileSystem.onConnectionError = (error_code: number) => {
 
 getGraph(connect, digitaltwin_path).then(async (graph) => {
     const context: SpinalContext = await graph.getContext(command_context_name);
+    if (!context) throw new Error(`No context found for "${command_context_name}"`);
+
+    const startNode = await getStartNode(context, command_category_name, command_group_name)
+
     console.log("getting bmsEndpoints...")
-    const bmsEndpoints = await getAllBmsEndpoint(context);
+    const bmsEndpoints = await getAllBmsEndpoint(startNode, context);
     console.log(bmsEndpoints.length, "endpoint(s) found");
+
     console.log("binding...")
     await bindEndpoints(bmsEndpoints);
     console.log("** Done **")
 
+}).catch(err => {
+    console.error(err.message || err)
+    process.exit(0);
 })

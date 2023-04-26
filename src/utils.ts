@@ -43,13 +43,32 @@ export function getGraph(connect: FileSystem, digitaltwin_path: string): Promise
     return new Promise((resolve, reject) => {
         spinalCore.load(connect, digitaltwin_path, async (graph: SpinalGraph) => {
             resolve(graph);
-        }, () => reject("digital twin not found"))
+        }, () => reject(new Error(`No digitaltwin found at ${digitaltwin_path}`)))
     });
 }
 
+export async function getStartNode(context: SpinalContext, categoryName?: string, groupName?: string): Promise<SpinalNode> {
+    let group = null;
+    let category = null;
 
-export function getAllBmsEndpoint(context: SpinalContext): Promise<SpinalContext[]> {
-    return context.findInContext(context, (node) => {
+    if (groupName && !categoryName) throw new Error(`"COMMAND_CATEGORY_NAME" is mandatory, when "COMMAND_GROUP_NAME" is specified`);
+    if (categoryName && context) {
+        category = await _getCategoryByName(context, categoryName);
+        if (!category) throw new Error(`no category found for "${categoryName}"`);
+    }
+
+    if (groupName && category) {
+        group = await _getGroupByName(context, category, groupName);
+        if (!group) throw new Error(`no group found for "${groupName}"`);
+    }
+
+
+    return group || category || context;
+}
+
+export function getAllBmsEndpoint(startNode: SpinalNode, context?: SpinalContext): Promise<SpinalContext[]> {
+    if (!context) context = startNode;
+    return startNode.findInContext(context, (node) => {
         if (node.getType().get() === SpinalBmsEndpoint.nodeTypeName) {
             return true;
         }
@@ -69,6 +88,17 @@ export async function bindEndpoints(endpoints: SpinalNode[]) {
 
 }
 
+
+async function _getCategoryByName(context: SpinalContext, categoryName: string): Promise<SpinalNode> {
+    const categories = await context.getChildrenInContext(context);
+    return categories.find(el => el.getName().get() === categoryName);
+}
+
+async function _getGroupByName(context: SpinalContext, category: SpinalNode, groupName: string): Promise<SpinalNode> {
+    const groups = await category.getChildrenInContext(context);
+    return groups.find(el => el.getName().get() === groupName);
+}
+
 async function _bindEndpoint(endpointNode: SpinalNode) {
     const { controlValue, device, element } = await _getEndpointData(endpointNode);
     const id = endpointNode.getId().get();
@@ -83,7 +113,6 @@ async function _bindEndpoint(endpointNode: SpinalNode) {
     }, false)
 }
 
-
 async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: SpinalNode, newValue) {
     // const [organNode] = await this.getEndpointOrgan(nodeId);
     // const devices = await this.getDevices(nodeId);
@@ -92,8 +121,8 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     // let organ = organNode;
     if (newValue === DEFAULT_COMMAND_VALUE) return;
 
-    if(newValue === "NaN") newValue = null;
-        
+    if (newValue === "NaN") newValue = null;
+
     const request: IRequest = {
         address: device.info.address.get(),
         deviceId: device.info.idNetwork.get(),
@@ -101,7 +130,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
         value: newValue,
     };
 
-    console.log(newValue!=null? endpointElement.name.get() + ` a changé de value => ${newValue}`: "Priorité relachée pour le : " + endpointElement.name.get());
+    console.log(newValue != null ? endpointElement.name.get() + ` a changé de value => ${newValue}` : "Priorité relachée pour le : " + endpointElement.name.get());
     return spinalPilot.sendPilotRequest(request);
 
     // const spinalPilot = new SpinalPilotModel(organ, requests);
@@ -109,7 +138,6 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     // return spinalPilot;
 
 }
-
 
 async function _getEndpointDevice(endpoint: SpinalNode): Promise<SpinalNode> {
     const endpointId = endpoint.getId().get();
