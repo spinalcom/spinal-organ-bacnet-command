@@ -109,10 +109,11 @@ function _getGroupByName(context, category, groupName) {
 }
 function _bindEndpoint(endpointNode) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { controlValue, device, element } = yield _getEndpointData(endpointNode);
         const id = endpointNode.getId().get();
-        controlValue.value.bind(() => __awaiter(this, void 0, void 0, function* () {
+        const modificationDate = endpointNode.info.directModificationDate;
+        modificationDate.bind(() => __awaiter(this, void 0, void 0, function* () {
             if (isInitiated[id]) {
+                const { controlValue, device, element } = yield _getEndpointData(endpointNode);
                 const newValue = controlValue.value.get();
                 const success = yield sendUpdateRequest(element, device, newValue);
                 if (success)
@@ -132,10 +133,9 @@ function sendUpdateRequest(endpointElement, device, newValue) {
         // let organ = organNode;
         if (newValue === DEFAULT_COMMAND_VALUE)
             return;
-        if (newValue === "NaN_1")
+        if (newValue === "NaN")
             newValue = null;
-        if (newValue === "NaN_2")
-            newValue = null;
+        // if(newValue === "NaN_2") newValue = null;
         const request = {
             address: device.info.address.get(),
             deviceId: device.info.idNetwork.get(),

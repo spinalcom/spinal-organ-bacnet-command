@@ -103,10 +103,12 @@ async function _getGroupByName(context: SpinalContext, category: SpinalNode, gro
 }
 
 async function _bindEndpoint(endpointNode: SpinalNode) {
-    const { controlValue, device, element } = await _getEndpointData(endpointNode);
     const id = endpointNode.getId().get();
-    controlValue.value.bind(async () => {
+    const modificationDate = endpointNode.info.directModificationDate;
+
+    modificationDate.bind(async () => {
         if (isInitiated[id]) {
+            const { controlValue, device, element } = await _getEndpointData(endpointNode);
             const newValue = controlValue.value.get();
             const success = await sendUpdateRequest(element, device, newValue);
             if (success) element.currentValue.set(newValue);
@@ -124,8 +126,8 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     // let organ = organNode;
     if (newValue === DEFAULT_COMMAND_VALUE) return;
 
-    if(newValue === "NaN_1") newValue = null;
-    if(newValue === "NaN_2") newValue = null;
+    if(newValue === "NaN") newValue = null;
+    // if(newValue === "NaN_2") newValue = null;
 
     
     const request: IRequest = {
