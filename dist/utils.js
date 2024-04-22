@@ -32,18 +32,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bindEndpoints = exports.getAllBmsEndpoint = exports.getStartNode = exports.getGraph = void 0;
+exports.bindEndpoints = exports.getAllBmsEndpoint = exports.getStartNode = exports.getGraph = exports.EndPointProcess = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_model_bmsnetwork_1 = require("spinal-model-bmsnetwork");
 const spinalPilot_1 = require("./spinalPilot");
 const spinal_env_viewer_plugin_documentation_service_1 = require("spinal-env-viewer-plugin-documentation-service");
-const _ = require("lodash");
 const ConfigFile_js_1 = require("../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js");
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
 const DEFAULT_COMMAND_VALUE = "undefined";
 const endpointToDeviceMap = new Map();
 const isInitiated = {};
+class EndPointProcess extends spinal_core_connectorjs_type_1.Process {
+    constructor(models, onchange_construction, f) {
+        super(models.map(m => m.modelToBind), onchange_construction);
+        this.mapData = models;
+        this.f = f;
+    }
+    onchange() {
+        for (const { modelToBind, modelInCb } of this.mapData) {
+            if (modelToBind.has_been_directly_modified())
+                this.f(modelInCb);
+        }
+    }
+}
+exports.EndPointProcess = EndPointProcess;
+EndPointProcess._constructorName = 'EndPointProcess';
 function getGraph(connect, digitaltwin_path, config) {
     return new Promise((resolve, reject) => {
         spinal_core_connectorjs_type_1.spinalCore.load(connect, digitaltwin_path, (graph) => __awaiter(this, void 0, void 0, function* () {
@@ -86,12 +100,39 @@ function getAllBmsEndpoint(startNode, context) {
 exports.getAllBmsEndpoint = getAllBmsEndpoint;
 function bindEndpoints(endpoints) {
     return __awaiter(this, void 0, void 0, function* () {
-        const splitedEndpoints = _.chunk(endpoints, 10);
-        while (splitedEndpoints.length > 0) {
-            const _temp = splitedEndpoints.pop();
-            const promises = _temp.map(endpointNode => _bindEndpoint(endpointNode));
-            yield Promise.all(promises);
-        }
+        // const splitedEndpoints = _.chunk(endpoints, 10);
+        // while (splitedEndpoints.length > 0) {
+        //     const _temp = splitedEndpoints.pop();
+        //     // const promises = _temp.map(endpointNode => _bindEndpoint(endpointNode));
+        //     // await Promise.all(promises);
+        // }
+        // const id = endpointNode.getId().get();
+        // const modificationDate = endpointNode.info.directModificationDate;
+        // modificationDate.bind(async () => {
+        //     if (isInitiated[id]) {
+        //         const { controlValue, device, element } = await _getEndpointData(endpointNode);
+        //         const newValue = controlValue.value.get();
+        //         const success = await sendUpdateRequest(element, device, newValue);
+        //         if (success) element.currentValue.set(newValue);
+        //     } else {
+        //         isInitiated[id] = true;
+        //     }
+        // }, false)
+        new EndPointProcess(endpoints.map((e) => {
+            return { modelToBind: e.info.directModificationDate, modelInCb: e };
+        }), true, (endpointNode) => __awaiter(this, void 0, void 0, function* () {
+            const id = endpointNode.getId().get();
+            if (isInitiated[id]) {
+                const { controlValue, device, element } = yield _getEndpointData(endpointNode);
+                const newValue = controlValue.value.get();
+                const success = yield sendUpdateRequest(element, device, newValue);
+                if (success)
+                    element.currentValue.set(newValue);
+            }
+            else {
+                isInitiated[id] = true;
+            }
+        }));
     });
 }
 exports.bindEndpoints = bindEndpoints;
@@ -107,24 +148,20 @@ function _getGroupByName(context, category, groupName) {
         return groups.find(el => el.getName().get() === groupName);
     });
 }
-function _bindEndpoint(endpointNode) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const id = endpointNode.getId().get();
-        const modificationDate = endpointNode.info.directModificationDate;
-        modificationDate.bind(() => __awaiter(this, void 0, void 0, function* () {
-            if (isInitiated[id]) {
-                const { controlValue, device, element } = yield _getEndpointData(endpointNode);
-                const newValue = controlValue.value.get();
-                const success = yield sendUpdateRequest(element, device, newValue);
-                if (success)
-                    element.currentValue.set(newValue);
-            }
-            else {
-                isInitiated[id] = true;
-            }
-        }), false);
-    });
-}
+// async function _bindEndpoint(endpointNode: SpinalNode) {
+//     const id = endpointNode.getId().get();
+//     const modificationDate = endpointNode.info.directModificationDate;
+//     modificationDate.bind(async () => {
+//         if (isInitiated[id]) {
+//             const { controlValue, device, element } = await _getEndpointData(endpointNode);
+//             const newValue = controlValue.value.get();
+//             const success = await sendUpdateRequest(element, device, newValue);
+//             if (success) element.currentValue.set(newValue);
+//         } else {
+//             isInitiated[id] = true;
+//         }
+//     }, false)
+// }
 function sendUpdateRequest(endpointElement, device, newValue) {
     return __awaiter(this, void 0, void 0, function* () {
         // const [organNode] = await this.getEndpointOrgan(nodeId);

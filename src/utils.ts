@@ -22,12 +22,12 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { spinalCore, FileSystem } from "spinal-core-connectorjs_type";
+import { spinalCore, FileSystem, Process, Model } from "spinal-core-connectorjs_type";
 import { SpinalGraph, SpinalContext, SpinalNode } from "spinal-model-graph";
 import { SpinalBmsDevice, SpinalBmsEndpoint, SpinalBmsEndpointGroup } from "spinal-model-bmsnetwork";
 import { spinalPilot } from "./spinalPilot";
 import { attributeService } from "spinal-env-viewer-plugin-documentation-service";
-import * as _ from "lodash";
+// import * as _ from "lodash";
 import { SpinalAttribute } from "spinal-models-documentation/declarations";
 import { IRequest } from "spinal-model-bacnet";
 import { IConfigFile } from "./index";
@@ -41,7 +41,30 @@ const DEFAULT_COMMAND_VALUE = "undefined";
 const endpointToDeviceMap = new Map();
 const isInitiated = {};
 
-export function getGraph(connect: FileSystem, digitaltwin_path: string, config : IConfigFile): Promise<SpinalGraph> {
+type cbProcessData = { modelToBind: Model, modelInCb: SpinalNode }
+export class EndPointProcess extends Process {
+    public static _constructorName: string = 'EndPointProcess';
+    public f: (model: SpinalNode) => void;
+    mapData: cbProcessData[];
+    public constructor(
+        models: cbProcessData[],
+        onchange_construction: boolean,
+        f: (model: SpinalNode) => void
+    ) {
+        super(models.map(m => m.modelToBind), onchange_construction);
+        this.mapData = models;
+        this.f = f;
+    }
+    public onchange() {
+        for (const { modelToBind, modelInCb } of this.mapData) {
+            if (modelToBind.has_been_directly_modified())
+                this.f(modelInCb);
+        }
+    }
+}
+
+
+export function getGraph(connect: FileSystem, digitaltwin_path: string, config: IConfigFile): Promise<SpinalGraph> {
     return new Promise((resolve, reject) => {
         spinalCore.load(connect, digitaltwin_path, async (graph: SpinalGraph) => {
             ConfigFile.init(connect, config.name + "-config", config.host, config.protocol, parseInt(config.port));
@@ -80,14 +103,44 @@ export function getAllBmsEndpoint(startNode: SpinalNode, context?: SpinalContext
     })
 }
 
-export async function bindEndpoints(endpoints: SpinalNode[]) {
-    const splitedEndpoints = _.chunk(endpoints, 10);
 
-    while (splitedEndpoints.length > 0) {
-        const _temp = splitedEndpoints.pop();
-        const promises = _temp.map(endpointNode => _bindEndpoint(endpointNode));
-        await Promise.all(promises);
-    }
+export async function bindEndpoints(endpoints: SpinalNode[]) {
+    // const splitedEndpoints = _.chunk(endpoints, 10);
+
+    // while (splitedEndpoints.length > 0) {
+    //     const _temp = splitedEndpoints.pop();
+    //     // const promises = _temp.map(endpointNode => _bindEndpoint(endpointNode));
+    //     // await Promise.all(promises);
+    // }
+
+    // const id = endpointNode.getId().get();
+    // const modificationDate = endpointNode.info.directModificationDate;
+
+    // modificationDate.bind(async () => {
+    //     if (isInitiated[id]) {
+    //         const { controlValue, device, element } = await _getEndpointData(endpointNode);
+    //         const newValue = controlValue.value.get();
+    //         const success = await sendUpdateRequest(element, device, newValue);
+    //         if (success) element.currentValue.set(newValue);
+    //     } else {
+    //         isInitiated[id] = true;
+    //     }
+    // }, false)
+
+
+    new EndPointProcess(endpoints.map((e) => {
+        return { modelToBind: e.info.directModificationDate, modelInCb: e }
+    }), true, async (endpointNode) => {
+        const id = endpointNode.getId().get();
+        if (isInitiated[id]) {
+            const { controlValue, device, element } = await _getEndpointData(endpointNode);
+            const newValue = controlValue.value.get();
+            const success = await sendUpdateRequest(element, device, newValue);
+            if (success) element.currentValue.set(newValue);
+        } else {
+            isInitiated[id] = true;
+        }
+    });
 
 }
 
@@ -102,21 +155,21 @@ async function _getGroupByName(context: SpinalContext, category: SpinalNode, gro
     return groups.find(el => el.getName().get() === groupName);
 }
 
-async function _bindEndpoint(endpointNode: SpinalNode) {
-    const id = endpointNode.getId().get();
-    const modificationDate = endpointNode.info.directModificationDate;
+// async function _bindEndpoint(endpointNode: SpinalNode) {
+//     const id = endpointNode.getId().get();
+//     const modificationDate = endpointNode.info.directModificationDate;
 
-    modificationDate.bind(async () => {
-        if (isInitiated[id]) {
-            const { controlValue, device, element } = await _getEndpointData(endpointNode);
-            const newValue = controlValue.value.get();
-            const success = await sendUpdateRequest(element, device, newValue);
-            if (success) element.currentValue.set(newValue);
-        } else {
-            isInitiated[id] = true;
-        }
-    }, false)
-}
+//     modificationDate.bind(async () => {
+//         if (isInitiated[id]) {
+//             const { controlValue, device, element } = await _getEndpointData(endpointNode);
+//             const newValue = controlValue.value.get();
+//             const success = await sendUpdateRequest(element, device, newValue);
+//             if (success) element.currentValue.set(newValue);
+//         } else {
+//             isInitiated[id] = true;
+//         }
+//     }, false)
+// }
 
 async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: SpinalNode, newValue) {
     // const [organNode] = await this.getEndpointOrgan(nodeId);
@@ -126,10 +179,10 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     // let organ = organNode;
     if (newValue === DEFAULT_COMMAND_VALUE) return;
 
-    if(newValue === "NaN") newValue = null;
+    if (newValue === "NaN") newValue = null;
     // if(newValue === "NaN_2") newValue = null;
 
-    
+
     const request: IRequest = {
         address: device.info.address.get(),
         deviceId: device.info.idNetwork.get(),
