@@ -33,9 +33,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
-const utils_1 = require("./utils");
-const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
+const utils_js_1 = require("./utils.js");
+const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const userId = process.env.USER_ID;
 const password = process.env.PASSWORD;
 const protocol = process.env.PROTOCOL;
@@ -59,16 +59,16 @@ spinal_core_connectorjs_type_1.FileSystem.onConnectionError = (error_code) => {
     console.log("redemarrage");
     process.exit(error_code); // kill le process;
 };
-(0, utils_1.getGraph)(connect, digitaltwin_path, config).then((graph) => __awaiter(void 0, void 0, void 0, function* () {
+(0, utils_js_1.getGraph)(connect, digitaltwin_path, config).then((graph) => __awaiter(void 0, void 0, void 0, function* () {
     const context = yield graph.getContext(command_context_name);
     if (!context)
         throw new Error(`No context found for "${command_context_name}"`);
-    const startNode = yield (0, utils_1.getStartNode)(context, command_category_name, command_group_name);
+    const startNode = yield (0, utils_js_1.getStartNode)(context, command_category_name, command_group_name);
     console.log("getting bmsEndpoints...");
-    const bmsEndpoints = yield (0, utils_1.getAllBmsEndpoint)(startNode, context);
+    const bmsEndpoints = yield (0, utils_js_1.getAllBmsEndpoint)(startNode, context);
     console.log(bmsEndpoints.length, "endpoint(s) found");
     console.log("binding...");
-    yield (0, utils_1.bindEndpoints)(bmsEndpoints);
+    yield (0, utils_js_1.bindEndpoints)(bmsEndpoints);
     console.log("** Done **");
 })).catch(err => {
     console.error(err.message || err);

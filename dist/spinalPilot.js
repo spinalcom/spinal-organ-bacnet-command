@@ -33,15 +33,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.spinalPilot = void 0;
-const BacnetGlobalVariables_1 = require("./BacnetGlobalVariables");
+const BacnetGlobalVariables_js_1 = require("./BacnetGlobalVariables.js");
 const bacnet = require("bacstack");
+const pQueue = require("@esm2cjs/p-queue").default;
+const { AbortError } = require("@esm2cjs/p-queue");
 const bacnet_priority = process.env.BACNET_PRIORITY || "16";
 class SpinalPilot {
-    constructor() { }
-    sendPilotRequest(request) {
+    constructor() {
+        this.queue = new pQueue({ concurrency: 1 });
+    }
+    sendPilotRequest(request, endpointElement) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return this.writeProperty(request);
+                return (this.queue.add(() => this.writeProperty(request, endpointElement)));
+                // this.writeProperty(request)
                 // console.log("success");
             }
             catch (error) {
@@ -57,13 +62,14 @@ class SpinalPilot {
     //    return this.writeProperty(request);
     //    // }
     // }
-    writeProperty(req) {
+    writeProperty(req, endpointElement) {
         return __awaiter(this, void 0, void 0, function* () {
             const types = this.getDataTypes(req.objectId.type);
             let success = false;
             while (types.length > 0 && !success) {
                 const type = types.shift();
                 try {
+                    yield this.releasePriority(req, type);
                     yield this.useDataType(req, type);
                     success = true;
                 }
@@ -71,14 +77,29 @@ class SpinalPilot {
                     // throw error;
                 }
             }
+            yield new Promise(resolve => setTimeout(resolve, 1));
+            console.log(req.value != null ? endpointElement.name.get() + ` a changé de value => ${req.value}` : "Priorité relachée pour le : " + endpointElement.name.get());
             return success;
         });
     }
     useDataType(req, dataType) {
         return new Promise((resolve, reject) => {
             const client = new bacnet();
-            const value = dataType === BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
-            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
+            const value = dataType === BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
+            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_js_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(value);
+            });
+        });
+    }
+    releasePriority(req, dataType) {
+        return new Promise((resolve, reject) => {
+            const client = new bacnet();
+            const value = null;
+            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_js_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
                 if (err) {
                     reject(err);
                     return;
@@ -89,31 +110,31 @@ class SpinalPilot {
     }
     getDataTypes(type) {
         switch (type) {
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_ANALOG_INPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_ANALOG_OUTPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_ANALOG_VALUE:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_MULTI_STATE_INPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_MULTI_STATE_OUTPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_MULTI_STATE_VALUE:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_ANALOG_INPUT:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_ANALOG_OUTPUT:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_ANALOG_VALUE:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_MULTI_STATE_INPUT:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_MULTI_STATE_OUTPUT:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_MULTI_STATE_VALUE:
                 return [
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_SIGNED_INT,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_UNSIGNED_INT,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_REAL,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_DOUBLE
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_SIGNED_INT,
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_UNSIGNED_INT,
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_REAL,
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_DOUBLE
                 ];
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_BINARY_INPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_BINARY_OUTPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_BINARY_VALUE:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_BINARY_LIGHTING_OUTPUT:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_BINARY_INPUT:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_BINARY_OUTPUT:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_BINARY_VALUE:
+            case BacnetGlobalVariables_js_1.ObjectTypes.OBJECT_BINARY_LIGHTING_OUTPUT:
                 return [
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_BOOLEAN
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED,
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_BOOLEAN
                 ];
             default:
                 return [
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_OCTET_STRING,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_CHARACTER_STRING,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_BIT_STRING
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_OCTET_STRING,
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_CHARACTER_STRING,
+                    BacnetGlobalVariables_js_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_BIT_STRING
                 ];
         }
     }

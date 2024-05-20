@@ -22,12 +22,13 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
+
 import * as path from "path";
-import { getGraph, getStartNode, getAllBmsEndpoint, bindEndpoints } from "./utils";
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
+import { getGraph, getStartNode, getAllBmsEndpoint, bindEndpoints } from "./utils.js";
 import { SpinalContext } from "spinal-model-graph";
 import { spinalCore, FileSystem } from "spinal-core-connectorjs_type";
 
-require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 export interface IConfigFile{
     name : string,

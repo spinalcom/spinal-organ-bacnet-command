@@ -25,12 +25,12 @@
 import { spinalCore, FileSystem, Process, Model } from "spinal-core-connectorjs_type";
 import { SpinalGraph, SpinalContext, SpinalNode } from "spinal-model-graph";
 import { SpinalBmsDevice, SpinalBmsEndpoint, SpinalBmsEndpointGroup } from "spinal-model-bmsnetwork";
-import { spinalPilot } from "./spinalPilot";
+import { spinalPilot } from "./spinalPilot.js";
 import { attributeService } from "spinal-env-viewer-plugin-documentation-service";
 // import * as _ from "lodash";
 import { SpinalAttribute } from "spinal-models-documentation/declarations";
 import { IRequest } from "spinal-model-bacnet";
-import { IConfigFile } from "./index";
+import { IConfigFile } from "./index.js";
 import ConfigFile from "../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js"
 
 
@@ -67,7 +67,7 @@ export class EndPointProcess extends Process {
 export function getGraph(connect: FileSystem, digitaltwin_path: string, config: IConfigFile): Promise<SpinalGraph> {
     return new Promise((resolve, reject) => {
         spinalCore.load(connect, digitaltwin_path, async (graph: SpinalGraph) => {
-            ConfigFile.init(connect, config.name + "-config", config.host, config.protocol, parseInt(config.port));
+            ConfigFile.init(connect, config.name, config.host, config.protocol, parseInt(config.port));
             resolve(graph);
         }, () => reject(new Error(`No digitaltwin found at ${digitaltwin_path}`)))
     });
@@ -133,6 +133,7 @@ export async function bindEndpoints(endpoints: SpinalNode[]) {
     }), true, async (endpointNode) => {
         const id = endpointNode.getId().get();
         if (isInitiated[id]) {
+            
             const { controlValue, device, element } = await _getEndpointData(endpointNode);
             const newValue = controlValue.value.get();
             const success = await sendUpdateRequest(element, device, newValue);
@@ -190,8 +191,8 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
         value: newValue,
     };
 
-    console.log(newValue != null ? endpointElement.name.get() + ` a changé de value => ${newValue}` : "Priorité relachée pour le : " + endpointElement.name.get());
-    return spinalPilot.sendPilotRequest(request);
+    // console.log(newValue != null ? endpointElement.name.get() + ` a changé de value => ${newValue}` : "Priorité relachée pour le : " + endpointElement.name.get());
+    return spinalPilot.sendPilotRequest(request,endpointElement);
 
     // const spinalPilot = new SpinalPilotModel(organ, requests);
     // await spinalPilot.addToNode(endpointNode);

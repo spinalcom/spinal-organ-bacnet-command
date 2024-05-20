@@ -3,6 +3,7 @@
   "version": "2.1.0",
   "description": "",
   "main": "dist/index.js",
+
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node dist/index.js",
@@ -11,6 +12,7 @@
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^5.1.1",
+    "@esm2cjs/p-queue": "^7.3.0",
     "bacstack": "file:./lib/bacstack",
     "big-json": "^3.1.0",
     "dotenv": "^16.0.1",

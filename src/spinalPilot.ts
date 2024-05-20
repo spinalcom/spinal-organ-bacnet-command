@@ -24,18 +24,27 @@
 
 import { SpinalPilotModel } from "spinal-model-bacnet";
 import { IRequest } from "spinal-model-bacnet";
-import { PropertyIds, ObjectTypes, APPLICATION_TAGS } from "./BacnetGlobalVariables";
-
+import { PropertyIds, ObjectTypes, APPLICATION_TAGS } from "./BacnetGlobalVariables.js";
+import { SpinalBmsDevice, SpinalBmsEndpoint, SpinalBmsEndpointGroup } from "spinal-model-bmsnetwork";
 import * as bacnet from "bacstack";
+const pQueue = require("@esm2cjs/p-queue").default;
+const { AbortError } = require("@esm2cjs/p-queue");
+import { resolve } from "path";
+import { SpinalGraphService } from "spinal-env-viewer-graph-service";
+
 
 const bacnet_priority= process.env.BACNET_PRIORITY || "16";
 
 class SpinalPilot {
    constructor() { }
+   queue = new pQueue({ concurrency: 1 });
 
-   public async sendPilotRequest(request: IRequest): Promise<boolean> {
+   public async sendPilotRequest(request: IRequest, endpointElement: SpinalBmsEndpoint): Promise<boolean> {
       try {
-         return this.writeProperty(request)
+         return <Promise<boolean>>(
+            this.queue.add(() => this.writeProperty(request, endpointElement))
+          ); 
+         // this.writeProperty(request)
          // console.log("success");
       } catch (error) {
          console.error(error.message);
@@ -53,20 +62,23 @@ class SpinalPilot {
    //    // }
    // }
 
-   private async writeProperty(req: IRequest): Promise<boolean> {
+   private async writeProperty(req: IRequest,  endpointElement: SpinalBmsEndpoint): Promise<boolean> {
       const types = this.getDataTypes(req.objectId.type);
       let success = false;
 
       while (types.length > 0 && !success) {
          const type = types.shift();
          try {
+            await this.releasePriority(req, type);
             await this.useDataType(req, type);
             success = true;
          } catch (error) {
             // throw error;
          }
       }
-
+   
+      await new Promise(resolve => setTimeout(resolve,1));
+      console.log(req.value != null ? endpointElement.name.get() + ` a changé de value => ${req.value}` : "Priorité relachée pour le : " + endpointElement.name.get());
       return success;
 
    }
@@ -75,6 +87,22 @@ class SpinalPilot {
       return new Promise((resolve, reject) => {
          const client = new bacnet();
          const value = dataType === APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
+         
+         client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
+            if (err) {
+               reject(err)
+               return;
+            }
+            resolve(value);
+         })
+      });
+   }
+
+
+   private releasePriority(req: IRequest, dataType: number) {
+      return new Promise((resolve, reject) => {
+         const client = new bacnet();
+         const value = null;
 
          client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
             if (err) {

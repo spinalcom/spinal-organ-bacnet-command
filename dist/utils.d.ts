@@ -1,7 +1,7 @@
 import { FileSystem, Process, Model } from "spinal-core-connectorjs_type";
 import { SpinalGraph, SpinalContext, SpinalNode } from "spinal-model-graph";
-import { IConfigFile } from "./index";
-declare type cbProcessData = {
+import { IConfigFile } from "./index.js";
+type cbProcessData = {
     modelToBind: Model;
     modelInCb: SpinalNode;
 };
