@@ -28,7 +28,7 @@ import { PropertyIds, ObjectTypes, APPLICATION_TAGS } from "./BacnetGlobalVariab
 
 import * as bacnet from "bacstack";
 
-const bacnet_priority= process.env.BACNET_PRIORITY || "16";
+const bacnet_priority = process.env.BACNET_PRIORITY || "16";
 
 class SpinalPilot {
    constructor() { }
@@ -74,7 +74,7 @@ class SpinalPilot {
    private useDataType(req: IRequest, dataType: number) {
       return new Promise((resolve, reject) => {
          const client = new bacnet();
-         const value = dataType === APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
+         const value = dataType === APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (this._convertValueToBoolean(req.value) ? 1 : 0) : req.value;
 
          client.writeProperty(req.address, req.objectId, PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
             if (err) {
@@ -84,6 +84,18 @@ class SpinalPilot {
             resolve(value);
          })
       });
+   }
+
+   private _convertValueToBoolean(value: string | number | boolean): boolean {
+      if (typeof value === "boolean") return value;
+      if (typeof value === "number") return value !== 0;
+      if (typeof value === "string") {
+         const val = value.toLowerCase();
+
+         return val === "true" || val === "1";
+      }
+
+      return false;
    }
 
    private getDataTypes(type: any): number[] {

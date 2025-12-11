@@ -1,13 +1,13 @@
 {
   "name": "spinal-organ-bacnet-command",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node dist/index.js",
     "pm2": "npm run build && pm2 start ecosystem.config.js",
-    "postinstall": "npm dedupe"
+    "cut-postinstall": "npm dedupe"
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^5.1.1",
@@ -16,13 +16,7 @@
     "dotenv": "^16.0.1",
     "json5": "^2.2.0",
     "lodash": "^4.17.21",
-    "pm2": "^4.5.6",
-    "spinal-env-viewer-plugin-documentation-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
-    "spinal-lib-organ-monitoring": "git+https://github.com/spinalcom/spinal-lib-organ-monitoring.git",
-    "spinal-model-bacnet": "git+https://github.com/spinalcom/spinal-model-bacnet.git",
-    "spinal-model-bmsnetwork": "git+https://github.com/spinalcom/spinal-model-bmsnetwork.git#bacnet",
-    "spinal-model-graph": "git+https://github.com/spinalcom/spinal-model-graph.git",
-    "spinal-models-documentation": "git+https://github.com/spinalcom/spinal-models-documentation.git"
+    "pm2": "^4.5.6"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.185",
@@ -36,5 +30,13 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "spinalDependencies": {
+    "spinal-env-viewer-plugin-documentation-service": "spinal-env-viewer-plugin-documentation-service",
+    "spinal-lib-organ-monitoring": "spinal-lib-organ-monitoring",
+    "spinal-model-bacnet": "spinal-model-bacnet",
+    "spinal-model-bmsnetwork": "spinal-model-bmsnetwork@bacnet",
+    "spinal-model-graph": "spinal-model-graph",
+    "spinal-models-documentation": "spinal-models-documentation"
+  }
 }

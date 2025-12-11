@@ -4,6 +4,7 @@ declare class SpinalPilot {
     sendPilotRequest(request: IRequest): Promise<boolean>;
     private writeProperty;
     private useDataType;
+    private _convertValueToBoolean;
     private getDataTypes;
 }
 declare const spinalPilot: SpinalPilot;

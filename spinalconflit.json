@@ -1,0 +1,8 @@
+{
+	"spinal-model-bmsnetwork": {
+		"forceCommit": "bacnet",
+		"found": {
+			"bacnet": ["spinal-organ-bacnet-command", "spinal-env-viewer-plugin-group-manager-service"]
+		}
+	}
+}
