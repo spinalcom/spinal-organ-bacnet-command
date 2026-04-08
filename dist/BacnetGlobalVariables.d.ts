@@ -3,7 +3,6 @@ export declare const PropertyIds: any;
 export declare const ENUM_DISABLE: any;
 export declare const APPLICATION_TAGS: any;
 export declare const SEGMENTATIONS: any;
-export declare const SENSOR_TYPES: number[];
 export declare const PropertyNames: {
     [key: number]: string;
 };

@@ -37,7 +37,15 @@ const BacnetGlobalVariables_1 = require("./BacnetGlobalVariables");
 const bacnet = require("bacstack");
 const bacnet_priority = process.env.BACNET_PRIORITY || "16";
 class SpinalPilot {
-    constructor() { }
+    constructor() {
+        this._bacnetClient = new bacnet();
+    }
+    static getInstance() {
+        if (!this._instance) {
+            this._instance = new SpinalPilot();
+        }
+        return this._instance;
+    }
     sendPilotRequest(request) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -50,13 +58,6 @@ class SpinalPilot {
             }
         });
     }
-    // public async writeProperties(request: IRequest) {
-    //    // if (!Array.isArray(requests)) requests = [requests];
-    //    // for (let index = 0; index < requests.length; index++) {
-    //    // const req = requests[index];
-    //    return this.writeProperty(request);
-    //    // }
-    // }
     writeProperty(req) {
         return __awaiter(this, void 0, void 0, function* () {
             const types = this.getDataTypes(req.objectId.type);
@@ -76,9 +77,12 @@ class SpinalPilot {
     }
     useDataType(req, dataType) {
         return new Promise((resolve, reject) => {
-            const client = new bacnet();
             const value = dataType === BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (this._convertValueToBoolean(req.value) ? 1 : 0) : req.value;
-            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
+            if (!req.SADR || typeof req.SADR === "object" && Object.keys(req.SADR).length === 0)
+                req.SADR = null;
+            let priority = parseInt(bacnet_priority);
+            priority = isNaN(priority) ? 16 : priority;
+            this._bacnetClient.writeProperty(req.address, req.SADR, req.objectId, BacnetGlobalVariables_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority }, (err, value) => {
                 if (err) {
                     reject(err);
                     return;
@@ -129,7 +133,7 @@ class SpinalPilot {
         }
     }
 }
-const spinalPilot = new SpinalPilot();
+const spinalPilot = SpinalPilot.getInstance();
 exports.spinalPilot = spinalPilot;
 exports.default = spinalPilot;
 //# sourceMappingURL=spinalPilot.js.map

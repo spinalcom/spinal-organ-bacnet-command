@@ -23,60 +23,22 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UNITS_TYPES = exports.ObjectTypesCode = exports.PropertyNames = exports.SENSOR_TYPES = exports.SEGMENTATIONS = exports.APPLICATION_TAGS = exports.ENUM_DISABLE = exports.PropertyIds = exports.ObjectTypes = void 0;
-const bacnet = require("bacstack");
-exports.ObjectTypes = bacnet.enum.ObjectTypes;
-exports.PropertyIds = bacnet.enum.PropertyIds;
-exports.ENUM_DISABLE = bacnet.enum.EnableDisable;
-exports.APPLICATION_TAGS = bacnet.enum.ApplicationTags;
-exports.SEGMENTATIONS = bacnet.enum.Segmentations;
-/*
-* TYPE of item retrieved to devices
-*/
-exports.SENSOR_TYPES = [
-    // ANALOG
-    exports.ObjectTypes.OBJECT_ANALOG_INPUT,
-    exports.ObjectTypes.OBJECT_ANALOG_OUTPUT,
-    exports.ObjectTypes.OBJECT_ANALOG_VALUE,
-    // BINARY
-    exports.ObjectTypes.OBJECT_BINARY_INPUT,
-    exports.ObjectTypes.OBJECT_BINARY_OUTPUT,
-    exports.ObjectTypes.OBJECT_BINARY_VALUE,
-    exports.ObjectTypes.OBJECT_BINARY_LIGHTING_OUTPUT,
-    // MULTI_STATE
-    exports.ObjectTypes.OBJECT_MULTI_STATE_INPUT,
-    exports.ObjectTypes.OBJECT_MULTI_STATE_OUTPUT,
-    exports.ObjectTypes.OBJECT_MULTI_STATE_VALUE,
-    //NETWORK
-];
-/*
-* All property object ({name : code}) of device
-*/
-exports.PropertyNames = (function swap(json) {
-    var ret = {};
-    for (var key in json) {
-        ret[json[key]] = key;
+exports.UNITS_TYPES = exports.ObjectTypesCode = exports.PropertyNames = exports.SEGMENTATIONS = exports.APPLICATION_TAGS = exports.ENUM_DISABLE = exports.PropertyIds = exports.ObjectTypes = void 0;
+const bacnetEnum_1 = require("./bacnetEnum");
+exports.ObjectTypes = bacnetEnum_1.default.ObjectTypes;
+exports.PropertyIds = bacnetEnum_1.default.PropertyIds;
+exports.ENUM_DISABLE = bacnetEnum_1.default.EnableDisable;
+exports.APPLICATION_TAGS = bacnetEnum_1.default.ApplicationTags;
+exports.SEGMENTATIONS = bacnetEnum_1.default.Segmentations;
+exports.PropertyNames = swapObject(bacnetEnum_1.default.PropertyIds);
+exports.ObjectTypesCode = swapObject(bacnetEnum_1.default.ObjectTypes);
+exports.UNITS_TYPES = swapObject(bacnetEnum_1.default.UnitsId);
+function swapObject(json) {
+    const swapped = {};
+    for (const key in json) {
+        const value = json[key];
+        swapped[value] = key;
     }
-    return ret;
-})(bacnet.enum.PropertyIds);
-/*
-* All property object ({code : name}) of device
-*/
-exports.ObjectTypesCode = (function swap(json) {
-    var ret = {};
-    for (var key in json) {
-        ret[json[key]] = key;
-    }
-    return ret;
-})(bacnet.enum.ObjectTypes);
-/*
-* All property object ({name : code}) of device
-*/
-exports.UNITS_TYPES = (function swap(json) {
-    var ret = {};
-    for (var key in json) {
-        ret[json[key]] = key;
-    }
-    return ret;
-})(bacnet.enum.UnitsId);
+    return swapped;
+}
 //# sourceMappingURL=BacnetGlobalVariables.js.map

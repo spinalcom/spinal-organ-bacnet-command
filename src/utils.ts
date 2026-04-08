@@ -31,7 +31,7 @@ import * as _ from "lodash";
 import { SpinalAttribute } from "spinal-models-documentation/declarations";
 import { IRequest } from "spinal-model-bacnet";
 import { IConfigFile } from "./index";
-import ConfigFile from "../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js"
+import ConfigFile from "spinal-lib-organ-monitoring"
 
 
 const ATTRIBUTE_CATEGORY_NAME = "default";
@@ -41,7 +41,7 @@ const DEFAULT_COMMAND_VALUE = "undefined";
 const endpointToDeviceMap = new Map();
 const isInitiated = {};
 
-export function getGraph(connect: FileSystem, digitaltwin_path: string, config : IConfigFile): Promise<SpinalGraph> {
+export function getGraph(connect: FileSystem, digitaltwin_path: string, config: IConfigFile): Promise<SpinalGraph> {
     return new Promise((resolve, reject) => {
         spinalCore.load(connect, digitaltwin_path, async (graph: SpinalGraph) => {
             ConfigFile.init(connect, config.name + "-config", config.host, config.protocol, parseInt(config.port));
@@ -126,10 +126,10 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     // let organ = organNode;
     if (newValue === DEFAULT_COMMAND_VALUE) return;
 
-    if(newValue === "NaN") newValue = null;
+    if (newValue === "NaN") newValue = null;
     // if(newValue === "NaN_2") newValue = null;
 
-    
+
     const request: IRequest = {
         address: device.info.address.get(),
         deviceId: device.info.idNetwork.get(),

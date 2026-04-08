@@ -38,7 +38,7 @@ const spinal_model_bmsnetwork_1 = require("spinal-model-bmsnetwork");
 const spinalPilot_1 = require("./spinalPilot");
 const spinal_env_viewer_plugin_documentation_service_1 = require("spinal-env-viewer-plugin-documentation-service");
 const _ = require("lodash");
-const ConfigFile_js_1 = require("../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js");
+const spinal_lib_organ_monitoring_1 = require("spinal-lib-organ-monitoring");
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
 const DEFAULT_COMMAND_VALUE = "undefined";
@@ -47,7 +47,7 @@ const isInitiated = {};
 function getGraph(connect, digitaltwin_path, config) {
     return new Promise((resolve, reject) => {
         spinal_core_connectorjs_type_1.spinalCore.load(connect, digitaltwin_path, (graph) => __awaiter(this, void 0, void 0, function* () {
-            ConfigFile_js_1.default.init(connect, config.name + "-config", config.host, config.protocol, parseInt(config.port));
+            spinal_lib_organ_monitoring_1.default.init(connect, config.name + "-config", config.host, config.protocol, parseInt(config.port));
             resolve(graph);
         }), () => reject(new Error(`No digitaltwin found at ${digitaltwin_path}`)));
     });
