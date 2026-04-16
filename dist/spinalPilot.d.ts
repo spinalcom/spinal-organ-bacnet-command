@@ -1,10 +1,10 @@
 import { IRequest } from "spinal-model-bacnet";
+import { SpinalBmsEndpoint } from "spinal-model-bmsnetwork";
 declare class SpinalPilot {
+    client: any;
     constructor();
-    sendPilotRequest(request: IRequest): Promise<boolean>;
-    private writeProperty;
-    private useDataType;
-    private getDataTypes;
+    queue: any;
+    sendPilotRequest(request: IRequest, endpointElement: SpinalBmsEndpoint): Promise<boolean>;
 }
 declare const spinalPilot: SpinalPilot;
 export default spinalPilot;

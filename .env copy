@@ -1,22 +1,23 @@
 #user
-USER_ID=""
-PASSWORD=""
+USER_ID="168"
+PASSWORD="2iQd3C6LRat56m"
 
 #hub
-PROTOCOL=""
-HOST=""
-PORT=""
+PROTOCOL="http"
+HOST="spinprd02"
+PORT="9014"
 
 #Digital twin
-DIGITAL_TWIN_PATH=""
+DIGITAL_TWIN_PATH="/__users__/admin/Digital twin"
 
 #context tree
-COMMAND_CONTEXT_NAME="" # obligatoire
-COMMAND_CATEGORY_NAME="" # obligatoire uniquement si COMMAND_GROUP_NAME est definie
-COMMAND_GROUP_NAME="" # pas obligatoire
+COMMAND_CONTEXT_NAME="EndPoint Context" # obligatoire
+COMMAND_CATEGORY_NAME="Auditorium" # obligatoire uniquement si COMMAND_GROUP_NAME est definie
+COMMAND_GROUP_NAME="liste" # pas obligatoire
 
 #bacnet
-BACNET_PRIORITY= ""
+BACNET_PRIORITY= "8"
 
 NODE_TLS_REJECT_UNAUTHORIZED=0
-ORGAN_NAME = "spinal-organ-bacnet-command"
+ORGAN_NAME = "spinal-organ-bacnet-command-auditorium"
+BACNET_SERVICE_PORT=47810 # default bacnet service port 

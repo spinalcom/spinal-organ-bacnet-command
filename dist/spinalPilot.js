@@ -31,91 +31,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.spinalPilot = void 0;
-const BacnetGlobalVariables_1 = require("./BacnetGlobalVariables");
-const bacnet = require("bacstack");
-const bacnet_priority = process.env.BACNET_PRIORITY || "16";
+// import * as bacnet from "bacstack";
+const pQueue = require("@esm2cjs/p-queue").default;
+const { AbortError } = require("@esm2cjs/p-queue");
+const BacnetUtils_js_1 = __importDefault(require("./BacnetUtils.js"));
 class SpinalPilot {
-    constructor() { }
-    sendPilotRequest(request) {
+    constructor() {
+        this.client = null;
+        this.queue = new pQueue({ concurrency: 1 });
+        // this.client = new bacnet({ adpuTimeout: 10000 });
+    }
+    sendPilotRequest(request, endpointElement) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return this.writeProperty(request);
-                // console.log("success");
+                const endpointName = endpointElement.name.get();
+                const releasePriority = true;
+                const data = yield BacnetUtils_js_1.default.sendPilotRequest(request, releasePriority);
+                console.log(request.value != null ? endpointName + ` a changé de value => ${request.value}` : "Priorité relachée pour le : " + endpointName);
+                return data;
             }
             catch (error) {
                 console.error(error.message);
                 return false;
             }
         });
-    }
-    // public async writeProperties(request: IRequest) {
-    //    // if (!Array.isArray(requests)) requests = [requests];
-    //    // for (let index = 0; index < requests.length; index++) {
-    //    // const req = requests[index];
-    //    return this.writeProperty(request);
-    //    // }
-    // }
-    writeProperty(req) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const types = this.getDataTypes(req.objectId.type);
-            let success = false;
-            while (types.length > 0 && !success) {
-                const type = types.shift();
-                try {
-                    yield this.useDataType(req, type);
-                    success = true;
-                }
-                catch (error) {
-                    // throw error;
-                }
-            }
-            return success;
-        });
-    }
-    useDataType(req, dataType) {
-        return new Promise((resolve, reject) => {
-            const client = new bacnet();
-            const value = dataType === BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED ? (req.value ? 1 : 0) : req.value;
-            client.writeProperty(req.address, req.objectId, BacnetGlobalVariables_1.PropertyIds.PROP_PRESENT_VALUE, [{ type: dataType, value: value }], { priority: parseInt(bacnet_priority) }, (err, value) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve(value);
-            });
-        });
-    }
-    getDataTypes(type) {
-        switch (type) {
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_ANALOG_INPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_ANALOG_OUTPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_ANALOG_VALUE:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_MULTI_STATE_INPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_MULTI_STATE_OUTPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_MULTI_STATE_VALUE:
-                return [
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_SIGNED_INT,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_UNSIGNED_INT,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_REAL,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_DOUBLE
-                ];
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_BINARY_INPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_BINARY_OUTPUT:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_BINARY_VALUE:
-            case BacnetGlobalVariables_1.ObjectTypes.OBJECT_BINARY_LIGHTING_OUTPUT:
-                return [
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_ENUMERATED,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_BOOLEAN
-                ];
-            default:
-                return [
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_OCTET_STRING,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_CHARACTER_STRING,
-                    BacnetGlobalVariables_1.APPLICATION_TAGS.BACNET_APPLICATION_TAG_BIT_STRING
-                ];
-        }
     }
 }
 const spinalPilot = new SpinalPilot();

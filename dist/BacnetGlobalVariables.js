@@ -25,11 +25,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UNITS_TYPES = exports.ObjectTypesCode = exports.PropertyNames = exports.SENSOR_TYPES = exports.SEGMENTATIONS = exports.APPLICATION_TAGS = exports.ENUM_DISABLE = exports.PropertyIds = exports.ObjectTypes = void 0;
 const bacnet = require("bacstack");
-exports.ObjectTypes = bacnet.enum.ObjectTypes;
-exports.PropertyIds = bacnet.enum.PropertyIds;
-exports.ENUM_DISABLE = bacnet.enum.EnableDisable;
-exports.APPLICATION_TAGS = bacnet.enum.ApplicationTags;
-exports.SEGMENTATIONS = bacnet.enum.Segmentations;
+const bacnetEnum_1 = require("./bacnetEnum");
+exports.ObjectTypes = bacnetEnum_1.default.ObjectTypes;
+exports.PropertyIds = bacnetEnum_1.default.PropertyIds;
+exports.ENUM_DISABLE = bacnetEnum_1.default.EnableDisable;
+exports.APPLICATION_TAGS = bacnetEnum_1.default.ApplicationTags;
+exports.SEGMENTATIONS = bacnetEnum_1.default.Segmentations;
 /*
 * TYPE of item retrieved to devices
 */

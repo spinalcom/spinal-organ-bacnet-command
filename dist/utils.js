@@ -31,13 +31,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindEndpoints = exports.getAllBmsEndpoint = exports.getStartNode = exports.getGraph = exports.EndPointProcess = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_model_bmsnetwork_1 = require("spinal-model-bmsnetwork");
-const spinalPilot_1 = require("./spinalPilot");
+const spinalPilot_js_1 = require("./spinalPilot.js");
 const spinal_env_viewer_plugin_documentation_service_1 = require("spinal-env-viewer-plugin-documentation-service");
-const ConfigFile_js_1 = require("../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js");
+const ConfigFile_js_1 = __importDefault(require("../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js"));
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
 const DEFAULT_COMMAND_VALUE = "undefined";
@@ -61,7 +64,7 @@ EndPointProcess._constructorName = 'EndPointProcess';
 function getGraph(connect, digitaltwin_path, config) {
     return new Promise((resolve, reject) => {
         spinal_core_connectorjs_type_1.spinalCore.load(connect, digitaltwin_path, (graph) => __awaiter(this, void 0, void 0, function* () {
-            ConfigFile_js_1.default.init(connect, config.name + "-config", config.host, config.protocol, parseInt(config.port));
+            ConfigFile_js_1.default.init(connect, config.name, config.host, config.protocol, parseInt(config.port));
             resolve(graph);
         }), () => reject(new Error(`No digitaltwin found at ${digitaltwin_path}`)));
     });
@@ -179,8 +182,8 @@ function sendUpdateRequest(endpointElement, device, newValue) {
             objectId: { type: endpointElement.typeId.get(), instance: endpointElement.id.get() },
             value: newValue,
         };
-        console.log(newValue != null ? endpointElement.name.get() + ` a changé de value => ${newValue}` : "Priorité relachée pour le : " + endpointElement.name.get());
-        return spinalPilot_1.spinalPilot.sendPilotRequest(request);
+        // console.log(newValue != null ? endpointElement.name.get() + ` a changé de value => ${newValue}` : "Priorité relachée pour le : " + endpointElement.name.get());
+        return spinalPilot_js_1.spinalPilot.sendPilotRequest(request, endpointElement);
         // const spinalPilot = new SpinalPilotModel(organ, requests);
         // await spinalPilot.addToNode(endpointNode);
         // return spinalPilot;

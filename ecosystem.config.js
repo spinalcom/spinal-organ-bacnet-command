@@ -4,7 +4,7 @@ const pm2 = require("pm2");
 module.exports = {
   apps: [
     {
-      name: "spinal-organ-bacnet-command",
+      name: "spinal-organ-bacnet-command-auditorium",
       script: "./dist/index.js",
       cwd: "./",
       error_file: "./logs/err.log",

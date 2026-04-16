@@ -22,18 +22,20 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
+
 import * as path from "path";
-import { getGraph, getStartNode, getAllBmsEndpoint, bindEndpoints } from "./utils";
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
+import { getGraph, getStartNode, getAllBmsEndpoint, bindEndpoints } from "./utils.js";
 import { SpinalContext } from "spinal-model-graph";
 import { spinalCore, FileSystem } from "spinal-core-connectorjs_type";
+import { launchBacnetService } from "spinal-bacnet-service";
+import BacnetUtilities from "./BacnetUtils.js";
 
-require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
-
-export interface IConfigFile{
-    name : string,
+export interface IConfigFile {
+    name: string,
     host: string,
     protocol: string,
-    port : string
+    port: string
 }
 
 const userId = process.env.USER_ID;
@@ -50,10 +52,10 @@ const organ_name = process.env.ORGAN_NAME;
 
 const url = `${protocol}://${userId}:${password}@${host}:${port}/`;
 const connect = spinalCore.connect(url);
-let config : IConfigFile={
+let config: IConfigFile = {
     name: organ_name,
     host: host,
-    protocol : protocol,
+    protocol: protocol,
     port: port
 };
 
@@ -64,6 +66,11 @@ FileSystem.onConnectionError = (error_code: number) => {
 }
 
 getGraph(connect, digitaltwin_path, config).then(async (graph) => {
+
+    await launchBacnetService(); // On lance le service bacnet avant toute chose pour être sûr qu'il soit opérationnel avant de tenter de s'y connecter
+
+    await BacnetUtilities.initAndConnect(); // On initialise la connexion au service bacnet, et on met en place un listener pour se reconnecter automatiquement en cas de deconnexion du service bacnet
+
     const context: SpinalContext = await graph.getContext(command_context_name);
     if (!context) throw new Error(`No context found for "${command_context_name}"`);
 
