@@ -40,7 +40,7 @@ const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_model_bmsnetwork_1 = require("spinal-model-bmsnetwork");
 const spinalPilot_js_1 = require("./spinalPilot.js");
 const spinal_env_viewer_plugin_documentation_service_1 = require("spinal-env-viewer-plugin-documentation-service");
-const ConfigFile_js_1 = __importDefault(require("../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js"));
+const spinal_lib_organ_monitoring_1 = __importDefault(require("spinal-lib-organ-monitoring"));
 const ATTRIBUTE_CATEGORY_NAME = "default";
 const ATTRIBUTE_NAME = "controlValue";
 const DEFAULT_COMMAND_VALUE = "undefined";
@@ -64,7 +64,7 @@ EndPointProcess._constructorName = 'EndPointProcess';
 function getGraph(connect, digitaltwin_path, config) {
     return new Promise((resolve, reject) => {
         spinal_core_connectorjs_type_1.spinalCore.load(connect, digitaltwin_path, (graph) => __awaiter(this, void 0, void 0, function* () {
-            ConfigFile_js_1.default.init(connect, config.name, config.host, config.protocol, parseInt(config.port));
+            spinal_lib_organ_monitoring_1.default.init(connect, config.name, config.host, config.protocol, parseInt(config.port));
             resolve(graph);
         }), () => reject(new Error(`No digitaltwin found at ${digitaltwin_path}`)));
     });
@@ -121,9 +121,8 @@ function bindEndpoints(endpoints) {
         //         isInitiated[id] = true;
         //     }
         // }, false)
-        new EndPointProcess(endpoints.map((e) => {
-            return { modelToBind: e.info.directModificationDate, modelInCb: e };
-        }), true, (endpointNode) => __awaiter(this, void 0, void 0, function* () {
+        const endpointsData = endpoints.map((e) => ({ modelToBind: e.info.directModificationDate, modelInCb: e }));
+        new EndPointProcess(endpointsData, true, (endpointNode) => __awaiter(this, void 0, void 0, function* () {
             const id = endpointNode.getId().get();
             if (isInitiated[id]) {
                 const { controlValue, device, element } = yield _getEndpointData(endpointNode);
@@ -133,6 +132,7 @@ function bindEndpoints(endpoints) {
                     element.currentValue.set(newValue);
             }
             else {
+                yield _getEndpointControlValue(endpointNode); // on s'assure que l'attribut de controlValue est créé avant de binder le listener, pour éviter les problèmes
                 isInitiated[id] = true;
             }
         }));

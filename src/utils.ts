@@ -31,7 +31,7 @@ import { attributeService } from "spinal-env-viewer-plugin-documentation-service
 import { SpinalAttribute } from "spinal-models-documentation/declarations";
 import { IRequest } from "spinal-model-bacnet";
 import { IConfigFile } from "./index.js";
-import ConfigFile from "../node_modules/spinal-lib-organ-monitoring/dist/classes/ConfigFile.js"
+import ConfigFile from "spinal-lib-organ-monitoring"
 
 
 const ATTRIBUTE_CATEGORY_NAME = "default";
@@ -47,10 +47,7 @@ export class EndPointProcess extends Process {
     public f: (model: SpinalNode) => void;
     mapData: cbProcessData[];
     public constructor(
-        models: cbProcessData[],
-        onchange_construction: boolean,
-        f: (model: SpinalNode) => void
-    ) {
+        models: cbProcessData[], onchange_construction: boolean, f: (model: SpinalNode) => void) {
         super(models.map(m => m.modelToBind), onchange_construction);
         this.mapData = models;
         this.f = f;
@@ -127,18 +124,17 @@ export async function bindEndpoints(endpoints: SpinalNode[]) {
     //     }
     // }, false)
 
+    const endpointsData = endpoints.map((e) => ({ modelToBind: e.info.directModificationDate, modelInCb: e }))
 
-    new EndPointProcess(endpoints.map((e) => {
-        return { modelToBind: e.info.directModificationDate, modelInCb: e }
-    }), true, async (endpointNode) => {
+    new EndPointProcess(endpointsData, true, async (endpointNode) => {
         const id = endpointNode.getId().get();
         if (isInitiated[id]) {
-            
             const { controlValue, device, element } = await _getEndpointData(endpointNode);
             const newValue = controlValue.value.get();
             const success = await sendUpdateRequest(element, device, newValue);
             if (success) element.currentValue.set(newValue);
         } else {
+            await _getEndpointControlValue(endpointNode); // on s'assure que l'attribut de controlValue est créé avant de binder le listener, pour éviter les problèmes
             isInitiated[id] = true;
         }
     });
@@ -192,7 +188,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
     };
 
     // console.log(newValue != null ? endpointElement.name.get() + ` a changé de value => ${newValue}` : "Priorité relachée pour le : " + endpointElement.name.get());
-    return spinalPilot.sendPilotRequest(request,endpointElement);
+    return spinalPilot.sendPilotRequest(request, endpointElement);
 
     // const spinalPilot = new SpinalPilotModel(organ, requests);
     // await spinalPilot.addToNode(endpointNode);
