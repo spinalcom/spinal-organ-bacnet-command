@@ -39,7 +39,7 @@ const ATTRIBUTE_NAME = "controlValue";
 const DEFAULT_COMMAND_VALUE = "undefined";
 
 const endpointToDeviceMap = new Map();
-const isInitiated = {};
+const isInitiated: { [key: string]: boolean } = {};
 
 type cbProcessData = { modelToBind: Model, modelInCb: SpinalNode }
 export class EndPointProcess extends Process {
@@ -142,12 +142,12 @@ export async function bindEndpoints(endpoints: SpinalNode[]) {
 }
 
 
-async function _getCategoryByName(context: SpinalContext, categoryName: string): Promise<SpinalNode> {
+async function _getCategoryByName(context: SpinalContext, categoryName: string): Promise<SpinalNode | undefined> {
     const categories = await context.getChildrenInContext(context);
     return categories.find(el => el.getName().get() === categoryName);
 }
 
-async function _getGroupByName(context: SpinalContext, category: SpinalNode, groupName: string): Promise<SpinalNode> {
+async function _getGroupByName(context: SpinalContext, category: SpinalNode, groupName: string): Promise<SpinalNode | undefined> {
     const groups = await category.getChildrenInContext(context);
     return groups.find(el => el.getName().get() === groupName);
 }
@@ -196,7 +196,7 @@ async function sendUpdateRequest(endpointElement: SpinalBmsEndpoint, device: Spi
 
 }
 
-async function _getEndpointDevice(endpoint: SpinalNode): Promise<SpinalNode> {
+async function _getEndpointDevice(endpoint: SpinalNode): Promise<SpinalNode | undefined> {
     const endpointId = endpoint.getId().get();
     if (endpointToDeviceMap.get(endpointId)) return endpointToDeviceMap.get(endpointId);
 
@@ -204,6 +204,8 @@ async function _getEndpointDevice(endpoint: SpinalNode): Promise<SpinalNode> {
 
     while (queue.length > 0) {
         const current = queue.shift();
+        if (!current) continue;
+
         if (current.getType().get() === SpinalBmsDevice.nodeTypeName) {
             endpointToDeviceMap.set(endpointId, current);
             return current;

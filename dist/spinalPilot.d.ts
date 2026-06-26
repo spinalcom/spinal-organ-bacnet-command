@@ -4,7 +4,10 @@ declare class SpinalPilot {
     client: any;
     constructor();
     queue: any;
-    sendPilotRequest(request: IRequest, endpointElement: SpinalBmsEndpoint): Promise<boolean>;
+    sendPilotRequest(request: IRequest & {
+        priority?: number;
+    }, endpointElement: SpinalBmsEndpoint): Promise<boolean>;
+    private _getBacnetPriority;
 }
 declare const spinalPilot: SpinalPilot;
 export default spinalPilot;

@@ -50,7 +50,9 @@ class SpinalPilot {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const endpointName = endpointElement.name.get();
-                const releasePriority = true;
+                const releasePriority = false; // Set to true if you want to release the priority after the request is sent
+                if (!request.priority)
+                    request.priority = this._getBacnetPriority();
                 const data = yield BacnetUtils_js_1.default.sendPilotRequest(request, releasePriority);
                 console.log(request.value != null ? endpointName + ` a changé de value => ${request.value}` : "Priorité relachée pour le : " + endpointName);
                 return data;
@@ -60,6 +62,10 @@ class SpinalPilot {
                 return false;
             }
         });
+    }
+    _getBacnetPriority() {
+        const bacnet_priority = process.env.BACNET_PRIORITY || "16";
+        return parseInt(bacnet_priority);
     }
 }
 const spinalPilot = new SpinalPilot();

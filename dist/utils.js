@@ -197,6 +197,8 @@ function _getEndpointDevice(endpoint) {
         let queue = [endpoint];
         while (queue.length > 0) {
             const current = queue.shift();
+            if (!current)
+                continue;
             if (current.getType().get() === spinal_model_bmsnetwork_1.SpinalBmsDevice.nodeTypeName) {
                 endpointToDeviceMap.set(endpointId, current);
                 return current;
