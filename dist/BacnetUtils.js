@@ -43,6 +43,7 @@ const bacnet_priority = process.env.BACNET_PRIORITY || "16";
 class BacnetUtilitiesClass {
     constructor() {
         this._ipcClient = null;
+        this._clientId = process.env.ORGAN_NAME || "spinal-organ-bacnet";
     }
     static getInstance() {
         if (!this.instance)
@@ -52,7 +53,7 @@ class BacnetUtilitiesClass {
     initAndConnect() {
         return __awaiter(this, void 0, void 0, function* () {
             this._ipcClient = yield this._connectToServer();
-            this._ipcClient.on('disconnect', () => __awaiter(this, void 0, void 0, function* () {
+            this._ipcClient.on("disconnect", () => __awaiter(this, void 0, void 0, function* () {
                 this._ipcClient = yield this._connectToServer();
             }));
             console.log("connected to bacnet service");
@@ -62,9 +63,9 @@ class BacnetUtilitiesClass {
         return new Promise((resolve, reject) => {
             var _a;
             const serverServiceName = spinal_bacnet_service_1.SERVICE_NAME;
-            const clientServiceName = process.env.ORGAN_NAME || "spinal-organ-bacnet";
+            const clientServiceName = this._clientId;
             node_ipc_1.default.config.id = clientServiceName; // Set the IPC client ID to the organ name or a default value
-            node_ipc_1.default.config.retry = 5000; // Retry every 5 seconds if connection to server is lost 
+            node_ipc_1.default.config.retry = 5000; // Retry every 5 seconds if connection to server is lost
             node_ipc_1.default.config.silent = true; // Disable IPC debug logs
             const bacnetServicePort = (_a = process.env.BACNET_SERVICE_PORT) === null || _a === void 0 ? void 0 : _a.trim();
             const ipcServerPort = bacnetServicePort ? parseInt(bacnetServicePort) : 47810;
@@ -83,9 +84,11 @@ class BacnetUtilitiesClass {
             const params = {
                 name: functionName,
                 id: (0, uuid_1.v4)(),
-                parameters: parameters
+                parameters: parameters,
+                _clientId: this._clientId,
+                timestamp: Date.now(),
             };
-            this._ipcClient.emit(spinal_bacnet_service_1.MESSAGE_EVENT_NAME, (params));
+            this._ipcClient.emit(spinal_bacnet_service_1.MESSAGE_EVENT_NAME, params);
             this._ipcClient.once(`${spinal_bacnet_service_1.RESPONSE_EVENT_NAME}_${params.id}`, (response) => {
                 if (response.status === "error") {
                     return reject({ message: response.error });

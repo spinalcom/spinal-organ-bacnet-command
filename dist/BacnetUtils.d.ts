@@ -1,6 +1,7 @@
 declare class BacnetUtilitiesClass {
     private static instance;
     private _ipcClient;
+    private _clientId;
     private constructor();
     static getInstance(): BacnetUtilitiesClass;
     initAndConnect(): Promise<void>;
