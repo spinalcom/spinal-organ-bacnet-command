@@ -89,15 +89,23 @@ export async function getStartNode(context: SpinalContext, categoryName?: string
     return group || category || context;
 }
 
-export function getAllBmsEndpoint(startNode: SpinalNode, context?: SpinalContext): Promise<SpinalContext[]> {
+export async function getAllBmsEndpoint(startNode: SpinalNode, context?: SpinalContext): Promise<SpinalContext[]> {
     if (!context) context = startNode;
-    return startNode.findInContext(context, (node) => {
-        if (node.getType().get() === SpinalBmsEndpoint.nodeTypeName) {
-            return true;
+    const errors: number[] = [];
+    const res = await startNode.findInContext(context, (node) => {
+        try {
+            if (node.getType().get() === SpinalBmsEndpoint.nodeTypeName) {
+                return true;
+            }
+        } catch (error) {
+            errors.push(node._server_id!);
         }
-
         return false
     })
+    if (errors.length > 0) {
+        console.warn(`Errors occurred for nodes with server IDs: ${errors.join(', ')}`);
+    }
+    return res
 }
 
 

@@ -91,13 +91,25 @@ function getStartNode(context, categoryName, groupName) {
 }
 exports.getStartNode = getStartNode;
 function getAllBmsEndpoint(startNode, context) {
-    if (!context)
-        context = startNode;
-    return startNode.findInContext(context, (node) => {
-        if (node.getType().get() === spinal_model_bmsnetwork_1.SpinalBmsEndpoint.nodeTypeName) {
-            return true;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!context)
+            context = startNode;
+        const errors = [];
+        const res = yield startNode.findInContext(context, (node) => {
+            try {
+                if (node.getType().get() === spinal_model_bmsnetwork_1.SpinalBmsEndpoint.nodeTypeName) {
+                    return true;
+                }
+            }
+            catch (error) {
+                errors.push(node._server_id);
+            }
+            return false;
+        });
+        if (errors.length > 0) {
+            console.warn(`Errors occurred for nodes with server IDs: ${errors.join(', ')}`);
         }
-        return false;
+        return res;
     });
 }
 exports.getAllBmsEndpoint = getAllBmsEndpoint;
